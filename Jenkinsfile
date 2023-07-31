@@ -17,13 +17,23 @@ pipeline {
                 }
             }
         }
-        stage("Push to Hub"){
+        stage("approvalGate"){
+            steps{
+                script{
+                    mail bcc: '', body: 'Docker image has been build, need approval to push to hub', cc: '', from: '', replyTo: '', subject: 'Approve to push to hub', to: 'mail.obareki@gmail.com'
+                    timeout(time:1 , unit:"DAYS"){
+                        input message: "Approve to push to dockerHub"
+                    }
+                }
+            }
+        }
+        stage("Pushing to dockerHub"){
             steps{
                 script{
                     withCredentials([string(credentialsId: 'docker-cred', variable: 'dockerpwd')]) {
                     sh 'docker login -u weonlife -p ${dockerpwd}'
 }
-                    sh "docker push weonlife/devops-integration:latest"
+                    sh 'docker push weonlife/devops-integration:latest'
                 }
             }
         }
